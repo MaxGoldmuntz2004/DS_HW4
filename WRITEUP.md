@@ -21,3 +21,15 @@ Window Rewrite: The window function replaced the GROUP BY genre_id CTE and the s
 ## Task 2: Top three per occupation"
 
 Prediction: ROW_NUMBER will return at most 3 rows per occupation because it forces a strict sequence. RANK may return more than 3 rows for an occupation if multiple movies tie for 3rd place, because it assigns the same rank to ties.
+
+Result:All checks passed. 3 rows per occupation for ROW_NUMBER, ties handled differently in RANK.
+
+Explanation:
+
+Tie-Breaker & Ties: I used movie_id ASC to break ties in ROW_NUMBER. RANK returns more rows overall because it assigns the exact same rank to ties (a tie for 3rd place returns 4 rows). ROW_NUMBER strictly cuts off at 3 rows.
+
+Missing Occupations: Some occupations have fewer than three rows because they do not have three distinct movies that meet the 20-rating minimum threshold.
+
+Top Picks Page: I would use ROW_NUMBER for a web page. UI layouts expect exactly 3 items, and returning extra rows due to a tie could break the design.
+
+DENSE_RANK Rule: DENSE_RANK is best for finding the "top 3 distinct rating scores". If the top scores are 5.0, 5.0, and 4.8, RANK skips 2nd place (1, 1, 3), ROW_NUMBER splits the 5.0 tie (1, 2, 3), but DENSE_RANK correctly groups ties without skipping numbers (1, 1, 2).
