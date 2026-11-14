@@ -33,3 +33,6 @@ Missing Occupations: Some occupations have fewer than three rows because they do
 Top Picks Page: I would use ROW_NUMBER for a web page. UI layouts expect exactly 3 items, and returning extra rows due to a tie could break the design.
 
 DENSE_RANK Rule: DENSE_RANK is best for finding the "top 3 distinct rating scores". If the top scores are 5.0, 5.0, and 4.8, RANK skips 2nd place (1, 1, 3), ROW_NUMBER splits the 5.0 tie (1, 2, 3), but DENSE_RANK correctly groups ties without skipping numbers (1, 1, 2).
+
+## Task 3: Sessions and frames
+Prediction: Removing the ROWS frame for the session flags will not change the answer because the flag is just 1 or 0; evaluating tied timestamps together yields the same running sum. However, the frames will give different results for the running mean because the default frame averages tied timestamps simultaneously, while the explicit ROWS frame averages them sequentially row-by-row. Both agree on the last value because both frames ultimately include all preceding rows.
