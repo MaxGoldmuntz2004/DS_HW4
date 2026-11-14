@@ -53,7 +53,7 @@ Last Value Agreement: The calculations agree on the last value for all 943 users
 ## Task 4: Two indexes for four queries
 Prediction:
 
-A_profile: Will use a pre-existing primary key index on user_id before and after. Adding a timestamp index might remove the USE TEMP B-TREE sort step.
+A_profile: Will use a pre-existing primary key index on user_id before and after, so performance won't change much.
 
 B_movie_page: Will do a full table SCAN before, and use the new movie_id index for a SEARCH after.
 
@@ -61,3 +61,23 @@ C_recent: Will SCAN before, and use the new timestamp index for a SEARCH after.
 
 D_month: Will SCAN before and after, because strftime() prevents the index from being used directly.
 
+Result:
+```
+--- t4
+wrote output/t4.json
+A_profile         0.059 ms ->     0.054 ms   ['SEARCH ratings USING INDEX sqlite_autoindex_ratings_1 (user_id=?)', 'USE TEMP B-TREE FOR ORDER BY']
+B_movie_page      1.569 ms ->     0.025 ms   ['SEARCH ratings USING INDEX idx_ratings_movie_id (movie_id=?)']
+C_recent          1.395 ms ->     0.015 ms   ['SEARCH ratings USING COVERING INDEX idx_ratings_timestamp (timestamp>?)']
+D_month           9.754 ms ->     9.327 ms   ['SCAN ratings USING COVERING INDEX idx_ratings_timestamp']
+D_rewrite         2.023 ms ->     0.142 ms   ['SEARCH ratings USING COVERING INDEX idx_ratings_timestamp (timestamp>? AND timestamp<?)']
+```
+
+Explanation:
+
+A_profile: Did not speed up significantly because it was already incredibly fast. SQLite automatically created an index (sqlite_autoindex_ratings_1) for the primary key on user_id, so it was already doing a fast SEARCH before we added anything. It still uses a TEMP B-TREE for the ORDER BY clause.
+
+B_movie_page & C_recent: Both saw massive speedups (dropping from ~1.5ms to ~0.02ms). The new movie_id and timestamp indexes allowed SQLite to switch from a full table SCAN to a highly efficient SEARCH.
+
+D_month: Stayed very slow (~9.3ms). Using a function like strftime() directly on the timestamp column in the WHERE clause blinds the database to the index. SQLite is forced to execute the function on every single row in a full SCAN.
+
+D_rewrite: Replaced the strftime() function with raw timestamp boundaries (timestamp >= ? AND timestamp < ?). By keeping the timestamp column bare, SQLite can finally utilize the index for a rapid SEARCH, dropping execution time down to ~0.14ms.
