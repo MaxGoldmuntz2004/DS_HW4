@@ -1,9 +1,21 @@
--- T2 (version 1, ROW_NUMBER). The three highest-rated movies for each
--- occupation, among movies rated at least 20 times by users with that occupation.
--- Required columns: occupation, pos, movie_id, title, n, mean_rating
--- Order the window so that the result is the same on every run (state your
--- tie-breaker in WRITEUP.md).
---
--- Prediction (commit before running): ______ rows.
-
--- YOUR QUERY HERE
+WITH OccRatings AS (
+    SELECT 
+        u.occupation, 
+        r.movie_id, 
+        AVG(r.rating) as avg_rating
+    FROM ratings r 
+    JOIN users u USING (user_id)
+    GROUP BY u.occupation, r.movie_id
+    HAVING COUNT(r.rating) >= 20
+),
+RankedMovies AS (
+    SELECT 
+        occupation, 
+        movie_id, 
+        avg_rating,
+        ROW_NUMBER() OVER (PARTITION BY occupation ORDER BY avg_rating DESC, movie_id ASC) as rn
+    FROM OccRatings
+)
+SELECT occupation, movie_id, avg_rating 
+FROM RankedMovies 
+WHERE rn <= 3;
