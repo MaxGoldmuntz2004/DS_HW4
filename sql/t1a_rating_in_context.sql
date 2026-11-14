@@ -5,3 +5,10 @@
 -- Prediction (commit before running): this query returns ______ rows, because ______.
 
 -- YOUR QUERY HERE
+SELECT
+    user_id,
+    movie_id,
+    rating,
+    AVG(rating) OVER (PARTITION BY user_id) AS user_mean,
+    AVG(rating) OVER (PARTITION BY movie_id) AS movie_mean
+FROM ratings;
