@@ -33,4 +33,6 @@ Task 4 works on a copy in `output/`. Results go to `output/`, and
 
 Record here what you used an assistant for, and for what:
 
-- (your entries)
+- Used Gemini to help figure out the exact SQLite syntax for window frames (like `ROWS BETWEEN UNBOUNDED PRECEDING`).
+- Used Gemini to troubleshoot my T1 query when the row count wasn't matching the Week 6 CTE chain (helped me realize I needed to filter by 30+ ratings *before* applying the window function).
+- Asked it to help interpret the `EXPLAIN QUERY PLAN` output in Task 4 to understand the difference between the SCAN and SEARCH steps.
