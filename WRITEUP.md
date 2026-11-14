@@ -81,3 +81,11 @@ B_movie_page & C_recent: Both saw massive speedups (dropping from ~1.5ms to ~0.0
 D_month: Stayed very slow (~9.3ms). Using a function like strftime() directly on the timestamp column in the WHERE clause blinds the database to the index. SQLite is forced to execute the function on every single row in a full SCAN.
 
 D_rewrite: Replaced the strftime() function with raw timestamp boundaries (timestamp >= ? AND timestamp < ?). By keeping the timestamp column bare, SQLite can finally utilize the index for a rapid SEARCH, dropping execution time down to ~0.14ms.
+
+
+## Task 5: Recommendation
+I recommend adding two new indexes to our database: one for the movie ID and one for the timestamp. However, we should leave out creating a new index for the user ID. The database automatically maintains a built-in index for user IDs, meaning the user profile page is already loading as efficiently as possible.
+
+Adding indexes for the movie ID and timestamp acts like an alphabetical index at the back of a textbook, allowing the database to jump straight to the relevant data instead of reading every single row. In our tests, the movie ID index made the movie page load over 60 times faster, dropping from 1.64 milliseconds to just 0.02 milliseconds. The timestamp index similarly sped up our recent ratings query, reducing its time from 1.42 milliseconds to 0.01 milliseconds.
+
+The main risk of adding these indexes is the overhead they introduce. They consume additional hard drive space to store the shortcut lists. Furthermore, every time a user submits a new rating, the database must take extra time to update both indexes, which can slightly slow down the process of saving new data.
