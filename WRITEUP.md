@@ -36,3 +36,15 @@ DENSE_RANK Rule: DENSE_RANK is best for finding the "top 3 distinct rating score
 
 ## Task 3: Sessions and frames
 Prediction: Removing the ROWS frame for the session flags will not change the answer because the flag is just 1 or 0; evaluating tied timestamps together yields the same running sum. However, the frames will give different results for the running mean because the default frame averages tied timestamps simultaneously, while the explicit ROWS frame averages them sequentially row-by-row. Both agree on the last value because both frames ultimately include all preceding rows.
+
+Result: 2793 sessions, max 737 ratings per session. Frames disagreed on 49,787 rows, all due to tied timestamps.
+
+Explanation:
+
+Session Default Frame: Removing the explicit ROWS frame does not change the session answer. The default frame (RANGE) evaluates identical timestamps together, but since the flag is just 1 or 0, processing ties as a group doesn't alter the running sum of session IDs.
+
+30-Minute Rule Example: This rule could falsely split a real session if a user rates a movie, spends 2 hours watching another movie, and then rates it (>30 min gap, but they were continuously using the app). It could falsely combine sessions if a user bulk-rates a bunch of movies they watched over the past week all at once.
+
+Running Mean Differences: The frames gave different results on 49,787 rows. All of these differing rows share a timestamp with another rating. The default RANGE frame averages tied timestamps simultaneously, while the ROWS frame averages them strictly sequentially row-by-row.
+
+Last Value Agreement: The calculations agree on the last value for all 943 users because by the time the window reaches a user's final rating, both frames encompass the exact same set of data (all of the user's preceding rows).
