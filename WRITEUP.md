@@ -48,3 +48,16 @@ Session Default Frame: Removing the explicit ROWS frame does not change the sess
 Running Mean Differences: The frames gave different results on 49,787 rows. All of these differing rows share a timestamp with another rating. The default RANGE frame averages tied timestamps simultaneously, while the ROWS frame averages them strictly sequentially row-by-row.
 
 Last Value Agreement: The calculations agree on the last value for all 943 users because by the time the window reaches a user's final rating, both frames encompass the exact same set of data (all of the user's preceding rows).
+
+
+## Task 4: Two indexes for four queries
+Prediction:
+
+A_profile: Will use a pre-existing primary key index on user_id before and after. Adding a timestamp index might remove the USE TEMP B-TREE sort step.
+
+B_movie_page: Will do a full table SCAN before, and use the new movie_id index for a SEARCH after.
+
+C_recent: Will SCAN before, and use the new timestamp index for a SEARCH after.
+
+D_month: Will SCAN before and after, because strftime() prevents the index from being used directly.
+
